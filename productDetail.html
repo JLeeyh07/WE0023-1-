@@ -16,13 +16,11 @@
 
 <div id="productDetailContainer"></div>
 
-<!-- Firebase CDN -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 
 <script>
-  const firebaseConfig = {
+  var firebaseConfig = {
     apiKey: "AIzaSyBTSEX-KMCddwLaKNCSEvEI0OQr58uayyg",
     authDomain: "we0023-59d22.firebaseapp.com",
     projectId: "we0023-59d22",
@@ -30,56 +28,48 @@
     messagingSenderId: "443902240610",
     appId: "1:443902240610:web:a649d92142e78c51b3ee3b"
   };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  var db = firebase.firestore();
 
   const currentUser = prompt("Enter your seller name for delete permission:");
+  const id = localStorage.getItem("selectedItemId");
+  const container = document.getElementById("productDetailContainer");
 
-  function loadProductDetail() {
-    const container = document.getElementById("productDetailContainer");
-    const id = localStorage.getItem("selectedItemId");
-    if (!id) return container.innerHTML = "<p>No product selected.</p>";
+  if(!id) container.innerHTML = "<p>No product selected.</p>";
+  else {
+    db.collection("products").doc(id).get().then(doc => {
+      if(!doc.exists) { container.innerHTML = "<p>Product not found.</p>"; return; }
 
-    db.collection("products").doc(id).get()
-      .then(doc => {
-        if (!doc.exists) return container.innerHTML = "<p>Product not found.</p>";
+      const item = doc.data();
+      container.innerHTML = `
+        <h2>${item.productName}</h2>
+        <img src="${item.imageUrl}">
+        <p><strong>Seller:</strong> ${item.sellerName}</p>
+        <p><strong>Blok:</strong> ${item.blok}</p>
+        <p><strong>Phone:</strong> ${item.phone}</p>
+        <p><strong>Product Category:</strong> ${item.productCategory}</p>
+        <p><strong>Service Category:</strong> ${item.serviceCategory}</p>
+        <p><strong>Price:</strong> RM${item.price}</p>
+        <p><strong>Description:</strong> ${item.description}</p>
+      `;
 
-        const item = doc.data();
-        container.innerHTML = `
-          <h2>${item.productName}</h2>
-          <img src="${item.imageUrl}">
-          <p><strong>Seller:</strong> ${item.sellerName}</p>
-          <p><strong>Blok:</strong> ${item.blok}</p>
-          <p><strong>Phone:</strong> ${item.phone}</p>
-          <p><strong>Product Category:</strong> ${item.productCategory}</p>
-          <p><strong>Service Category:</strong> ${item.serviceCategory}</p>
-          <p><strong>Price:</strong> RM${item.price}</p>
-          <p><strong>Description:</strong> ${item.description}</p>
-        `;
-
-        // Delete button
-        if (item.sellerName === currentUser) {
-          const deleteBtn = document.createElement("button");
-          deleteBtn.innerText = "Delete Item";
-          deleteBtn.onclick = function() {
-            if(confirm("Delete this item?")) {
-              db.collection("products").doc(id).delete()
-                .then(()=> {
-                  alert("Item deleted.");
-                  window.location.href = "index.html";
-                });
-            }
-          };
-          container.appendChild(deleteBtn);
-        }
-      });
+      if(item.sellerName === currentUser){
+        const deleteBtn = document.createElement("button");
+        deleteBtn.innerText = "Delete Item";
+        deleteBtn.onclick = () => {
+          if(confirm("Delete this item?")){
+            db.collection("products").doc(id).delete().then(()=> {
+              alert("Item deleted.");
+              window.location.href = "index.html";
+            });
+          }
+        };
+        container.appendChild(deleteBtn);
+      }
+    });
   }
-
-  window.onload = loadProductDetail;
 </script>
 
 </body>
 </html>
-
 
