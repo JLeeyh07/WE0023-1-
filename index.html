@@ -1,59 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-<link rel="stylesheet" href="style.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Online Flea Market</title>
 <link rel="stylesheet" href="style.css">
-<script src="script.js" defer></script>
 </head>
 <body>
-<script type="module">
-  // Import Firebase functions
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
-
-  // Your Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyBTSEX-KMCddwLaKNCSEvEI0OQr58uayyg",
-    authDomain: "we0023-59d22.firebaseapp.com",
-    projectId: "we0023-59d22",
-    storageBucket: "we0023-59d22.firebasestorage.app",
-    messagingSenderId: "443902240610",
-    appId: "1:443902240610:web:a649d92142e78c51b3ee3b"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // Fetch products from Firestore
-  async function loadProducts() {
-    const container = document.getElementById("productsContainer");
-    container.innerHTML = ""; // Clear container
-
-    const querySnapshot = await getDocs(collection(db, "products")); // 'products' is your collection name
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const div = document.createElement("div");
-      div.style.border = "1px solid #ccc";
-      div.style.padding = "10px";
-      div.style.width = "200px";
-
-      div.innerHTML = `
-        <h3>${data.name}</h3>
-        <p>Category: ${data.category}</p>
-        <p>Price: RM${data.price}</p>
-      `;
-      container.appendChild(div);
-    });
-  }
-
-  // Call the function to load products
-  loadProducts();
-</script>
 
 <header>
     <h1>Online Flea Market</h1>
@@ -66,52 +19,130 @@
 </nav>
 
 <div class="container">
-    <!-- Filters -->
-<div style="margin-bottom:20px;">
-    <label for="serviceFilter">Service Category:</label>
-	<select id="serviceFilter" onchange="applyFilters()">
-		<option value="">All Services</option>
-		<option value="Selling">Selling</option>
-		<option value="Renting">Renting</option>
-	</select>
+    <div style="margin-bottom:20px;">
+        <label>Service Category:</label>
+        <select id="serviceFilter" onchange="applyFilters()">
+            <option value="">All Services</option>
+            <option value="Selling">Selling</option>
+            <option value="Renting">Renting</option>
+        </select>
 
-	<select id="productFilter" onchange="applyFilters()">
-		<option value="All">All</option>
-		<option value="Clothes">Clothes</option>
-		<option value="Books">Books</option>
-		<option value="Cosmetics">Cosmetics</option>
-		<option value="Skin Care">Skin Care</option>
-		<option value="Accessories">Accessories</option>
-		<option value="Others">Others</option>
-	</select>
-	<div class="sortBox">
-    <label>
-		<input type="checkbox" id="sortLatest" onchange="applyFilters()">
-		Latest → Oldest
-	</label>
+        <select id="productFilter" onchange="applyFilters()">
+            <option value="All">All</option>
+            <option value="Clothes">Clothes</option>
+            <option value="Books">Books</option>
+            <option value="Cosmetics">Cosmetics</option>
+            <option value="Skin Care">Skin Care</option>
+            <option value="Accessories">Accessories</option>
+            <option value="Others">Others</option>
+        </select>
 
-	<label>
-		<input type="checkbox" id="sortCheap" onchange="applyFilters()">
-		Cheapest → Expensive
-	</label>
+        <div class="sortBox">
+            <label><input type="checkbox" id="sortLatest" onchange="applyFilters()"> Latest → Oldest</label>
+            <label><input type="checkbox" id="sortCheap" onchange="applyFilters()"> Cheapest → Expensive</label>
+        </div>
 
+        <input type="range" id="priceRange" min="2" max="100" value="100" oninput="updatePriceLabel(this.value)">
+        <span id="priceValue">RM100</span>
+    </div>
+
+    <div id="productsContainer" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
 </div>
 
+<script type="module">
+import { db } from './firebase.js';
+import { collection, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
-	<input type="range" id="priceRange" min="2" max="100" value="100"
-       oninput="updatePriceLabel(this.value)">
-	<span id="priceValue">RM100</span>
-</div>
+let productsCache = []; // cache for filtering
 
-<!-- Products Container -->
-<div id="productsContainer" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
-</div>
+async function loadProducts() {
+    const container = document.getElementById("productsContainer");
+    container.innerHTML = "Loading...";
+    const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+    productsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    displayItems(); // display after loading
+}
 
+function displayItems(serviceFilter = "", productFilter = "All", maxPrice = 100, sortLatest = false, sortCheap = false) {
+    const container = document.getElementById("productsContainer");
+    container.innerHTML = "";
+    if (!productsCache.length) {
+        container.innerHTML = "<p>No items found.</p>";
+        return;
+    }
 
-<script src="script.js"></script>
+    let items = [...productsCache];
+
+    // Filters
+    if (serviceFilter) items = items.filter(i => i.serviceCategory === serviceFilter);
+    if (productFilter !== "All") items = items.filter(i => i.productCategory === productFilter);
+    items = items.filter(i => i.price <= maxPrice);
+
+    // Sorting
+    if (sortLatest && sortCheap) {
+        items.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0) || a.price - b.price);
+    } else if (sortLatest) {
+        items.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+    } else if (sortCheap) {
+        items.sort((a, b) => a.price - b.price);
+    }
+
+    // Display
+    items.forEach((item, index) => {
+        const box = document.createElement("div");
+        box.className = "product-box";
+
+        const img = document.createElement("img");
+        img.src = item.imageUrl;
+
+        const name = document.createElement("p");
+        name.innerHTML = `<strong>Product:</strong> ${item.productName}`;
+
+        const seller = document.createElement("p");
+        seller.innerHTML = `<strong>Seller:</strong> ${item.sellerName}`;
+
+        const category = document.createElement("p");
+        category.innerHTML = `<strong>Category:</strong> ${item.productCategory}`;
+
+        const price = document.createElement("p");
+        price.innerHTML = `<strong>Price:</strong> RM${item.price}`;
+
+        const detailsBtn = document.createElement("button");
+        detailsBtn.innerText = "Product Details";
+        detailsBtn.onclick = () => {
+            localStorage.setItem("selectedItemId", item.id);
+            window.location.href = "productDetail.html";
+        };
+
+        box.append(img, name, seller, category, price, detailsBtn);
+        container.appendChild(box);
+    });
+
+}
+
+function applyFilters(){
+    const serviceFilter = document.getElementById("serviceFilter").value;
+    const productFilter = document.getElementById("productFilter").value;
+    const maxPrice = parseFloat(document.getElementById("priceRange").value);
+    const sortLatest = document.getElementById("sortLatest").checked;
+    const sortCheap = document.getElementById("sortCheap").checked;
+
+    displayItems(serviceFilter, productFilter, maxPrice, sortLatest, sortCheap);
+}
+
+function updatePriceLabel(value){
+    document.getElementById("priceValue").innerText = "RM" + value;
+    applyFilters();
+}
+
+window.onload = loadProducts;
+</script>
 
 </body>
 </html>
+
+
 
 
 
