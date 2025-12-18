@@ -1,3 +1,21 @@
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBTSEX-KMCddwLaKNCSEvEI0OQr58uayyg",
+  authDomain: "we0023-59d22.firebaseapp.com",
+  projectId: "we0023-59d22",
+  storageBucket: "we0023-59d22.firebasestorage.app",
+  messagingSenderId: "443902240610",
+  appId: "1:443902240610:web:a649d92142e78c51b3ee3b"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
 // ===============================
 // PAGE LOAD
 // ===============================
@@ -211,4 +229,5 @@ const item = {
     imageData: reader.result,
     createdAt: Date.now()
 };
+
 
