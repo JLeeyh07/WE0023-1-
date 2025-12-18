@@ -11,12 +11,11 @@
 </head>
 <body>
 <script type="module">
-  // Import the functions you need from the SDKs you need
+  // Import Firebase functions
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
-  // Your web app's Firebase configuration
+  // Your Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyBTSEX-KMCddwLaKNCSEvEI0OQr58uayyg",
     authDomain: "we0023-59d22.firebaseapp.com",
@@ -28,7 +27,34 @@
 
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Fetch products from Firestore
+  async function loadProducts() {
+    const container = document.getElementById("productsContainer");
+    container.innerHTML = ""; // Clear container
+
+    const querySnapshot = await getDocs(collection(db, "products")); // 'products' is your collection name
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      const div = document.createElement("div");
+      div.style.border = "1px solid #ccc";
+      div.style.padding = "10px";
+      div.style.width = "200px";
+
+      div.innerHTML = `
+        <h3>${data.name}</h3>
+        <p>Category: ${data.category}</p>
+        <p>Price: RM${data.price}</p>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  // Call the function to load products
+  loadProducts();
 </script>
+
 <header>
     <h1>Online Flea Market</h1>
 </header>
@@ -78,7 +104,6 @@
 </div>
 
 <!-- Products Container -->
-<div id="productsContainer"></div>
 <div id="productsContainer" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
 </div>
 
@@ -87,6 +112,7 @@
 
 </body>
 </html>
+
 
 
 
