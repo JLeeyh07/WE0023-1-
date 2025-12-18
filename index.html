@@ -49,31 +49,46 @@
     <div id="productsContainer" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
 </div>
 
-<script type="module">
-import { db } from './firebase.js';
-import { collection, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+<!-- Firebase CDN -->
+<script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js"></script>
 
-let productsCache = []; // cache for filtering
+<script>
+  // Initialize Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyBTSEX-KMCddwLaKNCSEvEI0OQr58uayyg",
+    authDomain: "we0023-59d22.firebaseapp.com",
+    projectId: "we0023-59d22",
+    storageBucket: "we0023-59d22.firebasestorage.app",
+    messagingSenderId: "443902240610",
+    appId: "1:443902240610:web:a649d92142e78c51b3ee3b"
+  };
 
-// For demonstration, assume currentUser is logged-in seller's name
-// Replace this with your authentication logic if available
-const currentUser = prompt("Enter your seller name for delete permission:"); 
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-async function loadProducts() {
+  const currentUser = prompt("Enter your seller name for delete permission:");
+
+  let productsCache = [];
+
+  function loadProducts() {
     const container = document.getElementById("productsContainer");
     container.innerHTML = "Loading...";
-    const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-    const snapshot = await getDocs(q);
-    productsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    displayItems();
-}
+    db.collection("products").orderBy("createdAt", "desc").get()
+      .then(snapshot => {
+        productsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        displayItems();
+      })
+      .catch(err => console.error(err));
+  }
 
-function displayItems(serviceFilter = "", productFilter = "All", maxPrice = 100, sortLatest = false, sortCheap = false) {
+  function displayItems(serviceFilter = "", productFilter = "All", maxPrice = 100, sortLatest = false, sortCheap = false) {
     const container = document.getElementById("productsContainer");
     container.innerHTML = "";
     if (!productsCache.length) {
-        container.innerHTML = "<p>No items found.</p>";
-        return;
+      container.innerHTML = "<p>No items found.</p>";
+      return;
     }
 
     let items = [...productsCache];
@@ -85,63 +100,63 @@ function displayItems(serviceFilter = "", productFilter = "All", maxPrice = 100,
 
     // Sorting
     if (sortLatest && sortCheap) {
-        items.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0) || a.price - b.price);
+      items.sort((a,b)=> (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0) || a.price - b.price);
     } else if (sortLatest) {
-        items.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+      items.sort((a,b)=> (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
     } else if (sortCheap) {
-        items.sort((a, b) => a.price - b.price);
+      items.sort((a,b)=> a.price - b.price);
     }
 
-    // Display
-    items.forEach((item, index) => {
-        const box = document.createElement("div");
-        box.className = "product-box";
+    items.forEach(item => {
+      const box = document.createElement("div");
+      box.className = "product-box";
 
-        const img = document.createElement("img");
-        img.src = item.imageUrl;
+      const img = document.createElement("img");
+      img.src = item.imageUrl;
 
-        const name = document.createElement("p");
-        name.innerHTML = `<strong>Product:</strong> ${item.productName}`;
+      const name = document.createElement("p");
+      name.innerHTML = `<strong>Product:</strong> ${item.productName}`;
 
-        const seller = document.createElement("p");
-        seller.innerHTML = `<strong>Seller:</strong> ${item.sellerName}`;
+      const seller = document.createElement("p");
+      seller.innerHTML = `<strong>Seller:</strong> ${item.sellerName}`;
 
-        const category = document.createElement("p");
-        category.innerHTML = `<strong>Category:</strong> ${item.productCategory}`;
+      const category = document.createElement("p");
+      category.innerHTML = `<strong>Category:</strong> ${item.productCategory}`;
 
-        const price = document.createElement("p");
-        price.innerHTML = `<strong>Price:</strong> RM${item.price}`;
+      const price = document.createElement("p");
+      price.innerHTML = `<strong>Price:</strong> RM${item.price}`;
 
-        const detailsBtn = document.createElement("button");
-        detailsBtn.innerText = "Product Details";
-        detailsBtn.onclick = () => {
-            localStorage.setItem("selectedItemId", item.id);
-            window.location.href = "productDetail.html";
+      const detailsBtn = document.createElement("button");
+      detailsBtn.innerText = "Product Details";
+      detailsBtn.onclick = () => {
+        localStorage.setItem("selectedItemId", item.id);
+        window.location.href = "productDetail.html";
+      };
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.innerText = "Delete";
+      deleteBtn.style.marginLeft = "5px";
+
+      if (item.sellerName === currentUser) {
+        deleteBtn.onclick = function() {
+          if(confirm("Delete this item?")) {
+            db.collection("products").doc(item.id).delete()
+              .then(()=> {
+                alert("Item deleted.");
+                loadProducts();
+              });
+          }
         };
+      } else {
+        deleteBtn.style.display = "none";
+      }
 
-        const deleteBtn = document.createElement("button");
-        deleteBtn.innerText = "Delete";
-        deleteBtn.style.marginLeft = "5px";
-
-        // Only show delete button for the uploader
-        if (item.sellerName === currentUser) {
-            deleteBtn.onclick = async () => {
-                if (confirm("Delete this item?")) {
-                    await deleteDoc(doc(db, "products", item.id));
-                    alert("Item deleted.");
-                    loadProducts(); // reload
-                }
-            };
-        } else {
-            deleteBtn.style.display = "none";
-        }
-
-        box.append(img, name, seller, category, price, detailsBtn, deleteBtn);
-        container.appendChild(box);
+      box.append(img, name, seller, category, price, detailsBtn, deleteBtn);
+      container.appendChild(box);
     });
-}
+  }
 
-function applyFilters(){
+  function applyFilters(){
     const serviceFilter = document.getElementById("serviceFilter").value;
     const productFilter = document.getElementById("productFilter").value;
     const maxPrice = parseFloat(document.getElementById("priceRange").value);
@@ -149,18 +164,19 @@ function applyFilters(){
     const sortCheap = document.getElementById("sortCheap").checked;
 
     displayItems(serviceFilter, productFilter, maxPrice, sortLatest, sortCheap);
-}
+  }
 
-function updatePriceLabel(value){
+  function updatePriceLabel(value){
     document.getElementById("priceValue").innerText = "RM" + value;
     applyFilters();
-}
+  }
 
-window.onload = loadProducts;
+  window.onload = loadProducts;
 </script>
 
 </body>
 </html>
+
 
 
 
