@@ -55,13 +55,17 @@ import { collection, getDocs, deleteDoc, doc, query, orderBy } from "https://www
 
 let productsCache = []; // cache for filtering
 
+// For demonstration, assume currentUser is logged-in seller's name
+// Replace this with your authentication logic if available
+const currentUser = prompt("Enter your seller name for delete permission:"); 
+
 async function loadProducts() {
     const container = document.getElementById("productsContainer");
     container.innerHTML = "Loading...";
     const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
     const snapshot = await getDocs(q);
     productsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    displayItems(); // display after loading
+    displayItems();
 }
 
 function displayItems(serviceFilter = "", productFilter = "All", maxPrice = 100, sortLatest = false, sortCheap = false) {
@@ -115,10 +119,26 @@ function displayItems(serviceFilter = "", productFilter = "All", maxPrice = 100,
             window.location.href = "productDetail.html";
         };
 
-        box.append(img, name, seller, category, price, detailsBtn);
+        const deleteBtn = document.createElement("button");
+        deleteBtn.innerText = "Delete";
+        deleteBtn.style.marginLeft = "5px";
+
+        // Only show delete button for the uploader
+        if (item.sellerName === currentUser) {
+            deleteBtn.onclick = async () => {
+                if (confirm("Delete this item?")) {
+                    await deleteDoc(doc(db, "products", item.id));
+                    alert("Item deleted.");
+                    loadProducts(); // reload
+                }
+            };
+        } else {
+            deleteBtn.style.display = "none";
+        }
+
+        box.append(img, name, seller, category, price, detailsBtn, deleteBtn);
         container.appendChild(box);
     });
-
 }
 
 function applyFilters(){
@@ -141,6 +161,7 @@ window.onload = loadProducts;
 
 </body>
 </html>
+
 
 
 
