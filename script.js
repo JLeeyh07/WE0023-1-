@@ -144,7 +144,15 @@ function displayItems(serviceFilter = "", productFilter = "All", maxPrice = 100,
         const deleteBtn = document.createElement("button");
         deleteBtn.innerText = "Delete";
         deleteBtn.className = "delete-btn";
-        deleteBtn.onclick = () => deleteItem(index);
+
+        // Only show button if current user is the uploader
+        if (item.sellerName === currentUser) {
+            deleteBtn.onclick = () => deleteItem(index);
+        } else {
+            deleteBtn.style.display = "none"; // hide for others
+        }
+
+box.appendChild(deleteBtn);
 
         box.append(img, name, seller, category, price, detailsBtn, deleteBtn);
         container.appendChild(box);
@@ -190,4 +198,17 @@ function deleteItem(index){
 
     applyFilters();
 }
+
+const item = {
+    productName,
+    sellerName,    // uploader
+    blok,
+    phone,
+    productCategory,
+    serviceCategory,
+    price,
+    description,
+    imageData: reader.result,
+    createdAt: Date.now()
+};
 
