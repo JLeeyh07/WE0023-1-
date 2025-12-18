@@ -1,32 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="stylesheet" href="style.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Upload Item - Online Flea Market</title>
-<script src="script.js" defer></script>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
 
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyBTSEX-KMCddwLaKNCSEvEI0OQr58uayyg",
-    authDomain: "we0023-59d22.firebaseapp.com",
-    projectId: "we0023-59d22",
-    storageBucket: "we0023-59d22.firebasestorage.app",
-    messagingSenderId: "443902240610",
-    appId: "1:443902240610:web:a649d92142e78c51b3ee3b"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>
 <header>
     <h1>Online Flea Market</h1>
 </header>
@@ -37,23 +18,21 @@
     <button onclick="location.href='rules.html'">Rules</button>
 </nav>
 
-
 <div class="container">
-    <!-- Navigation -->
 <form id="uploadForm">
-    <label for="productName">Name of Product:</label>
+    <label>Name of Product:</label>
     <input type="text" id="productName" required><br><br>
 
-    <label for="sellerName">Name of Seller:</label>
+    <label>Name of Seller:</label>
     <input type="text" id="sellerName" required><br><br>
 
-    <label for="blok">Blok:</label>
+    <label>Blok:</label>
     <input type="text" id="blok" required><br><br>
 
-    <label for="phone">Phone Number:</label>
+    <label>Phone Number:</label>
     <input type="text" id="phone" required><br><br>
 
-    <label for="productCategory">Category of Product:</label>
+    <label>Category of Product:</label>
     <select id="productCategory" required>
         <option value="Clothes">Clothes</option>
         <option value="Books">Books</option>
@@ -63,29 +42,79 @@
         <option value="Others">Others</option>
     </select><br><br>
 
-    <label for="serviceCategory">Category of Service:</label>
+    <label>Category of Service:</label>
     <select id="serviceCategory" required>
         <option value="Selling">Selling</option>
         <option value="Renting">Renting</option>
     </select><br><br>
 
-    <label for="price">Price (RM):</label>
+    <label>Price (RM):</label>
     <input type="number" id="price" min="2" max="100" required><br><br>
 
-    <label for="description">Description:</label><br>
+    <label>Description:</label><br>
     <textarea id="description" rows="4" cols="50"></textarea><br><br>
 
-    <label for="image">Upload Image:</label>
+    <label>Upload Image:</label>
     <input type="file" id="image" accept="image/*" required><br><br>
 
     <button type="submit">Upload Item</button>
 </form>
 </div>
 
+<script type="module">
+import { db, storage } from './firebase.js';
+import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js";
 
+const uploadForm = document.getElementById("uploadForm");
+
+uploadForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const productName = document.getElementById("productName").value.trim();
+    const sellerName = document.getElementById("sellerName").value.trim();
+    const blok = document.getElementById("blok").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const productCategory = document.getElementById("productCategory").value;
+    const serviceCategory = document.getElementById("serviceCategory").value;
+    const price = parseFloat(document.getElementById("price").value);
+    const description = document.getElementById("description").value;
+    const imageInput = document.getElementById("image");
+
+    if (!imageInput.files[0]) {
+        alert("Please upload an image");
+        return;
+    }
+
+    // Upload image to Firebase Storage
+    const imageFile = imageInput.files[0];
+    const imageRef = ref(storage, `productImages/${Date.now()}_${imageFile.name}`);
+    await uploadBytes(imageRef, imageFile);
+    const imageUrl = await getDownloadURL(imageRef);
+
+    // Add product to Firestore
+    await addDoc(collection(db, "products"), {
+        productName,
+        sellerName,
+        blok,
+        phone,
+        productCategory,
+        serviceCategory,
+        price,
+        description,
+        imageUrl,
+        createdAt: serverTimestamp()
+    });
+
+    alert("Item uploaded successfully!");
+    window.location.href = "index.html";
+});
+</script>
 
 </body>
 </html>
+
+
 
 
 
