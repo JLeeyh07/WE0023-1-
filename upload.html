@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upload Item - Online Flea Market</title>
+<script src="script.js" defer></script>
+</head>
+<body>
+
+<header>
+    <h1>Online Flea Market</h1>
+</header>
+
+<nav>
+    <button onclick="location.href='index.html'">Home</button>
+    <button onclick="location.href='upload.html'">Upload</button>
+    <button onclick="location.href='rules.html'">Rules</button>
+</nav>
+
+
+<div class="container">
+    <!-- Navigation -->
+<form id="uploadForm">
+    <label for="productName">Name of Product:</label>
+    <input type="text" id="productName" required><br><br>
+
+    <label for="sellerName">Name of Seller:</label>
+    <input type="text" id="sellerName" required><br><br>
+
+    <label for="blok">Blok:</label>
+    <input type="text" id="blok" required><br><br>
+
+    <label for="phone">Phone Number:</label>
+    <input type="text" id="phone" required><br><br>
+
+    <label for="productCategory">Category of Product:</label>
+    <select id="productCategory" required>
+        <option value="Clothes">Clothes</option>
+        <option value="Books">Books</option>
+        <option value="Cosmetics">Cosmetics</option>
+        <option value="Skin Care">Skin Care</option>
+        <option value="Accessories">Accessories</option>
+        <option value="Others">Others</option>
+    </select><br><br>
+
+    <label for="serviceCategory">Category of Service:</label>
+    <select id="serviceCategory" required>
+        <option value="Selling">Selling</option>
+        <option value="Renting">Renting</option>
+    </select><br><br>
+
+    <label for="price">Price (RM):</label>
+    <input type="number" id="price" min="2" max="100" required><br><br>
+
+    <label for="description">Description:</label><br>
+    <textarea id="description" rows="4" cols="50"></textarea><br><br>
+
+    <label for="image">Upload Image:</label>
+    <input type="file" id="image" accept="image/*" required><br><br>
+
+    <button type="submit">Upload Item</button>
+</form>
+</div>
+
+
+
+</body>
+</html>
+
+

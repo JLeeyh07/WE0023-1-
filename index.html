@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Flea Market</title>
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+</head>
+<body>
+
+<header>
+    <h1>Online Flea Market</h1>
+</header>
+
+<nav>
+    <button onclick="location.href='index.html'">Home</button>
+    <button onclick="location.href='upload.html'">Upload</button>
+    <button onclick="location.href='rules.html'">Rules</button>
+</nav>
+
+<div class="container">
+    <!-- Filters -->
+<div style="margin-bottom:20px;">
+    <label for="serviceFilter">Service Category:</label>
+	<select id="serviceFilter" onchange="applyFilters()">
+		<option value="">All Services</option>
+		<option value="Selling">Selling</option>
+		<option value="Renting">Renting</option>
+	</select>
+
+	<select id="productFilter" onchange="applyFilters()">
+		<option value="All">All</option>
+		<option value="Clothes">Clothes</option>
+		<option value="Books">Books</option>
+		<option value="Cosmetics">Cosmetics</option>
+		<option value="Skin Care">Skin Care</option>
+		<option value="Accessories">Accessories</option>
+		<option value="Others">Others</option>
+	</select>
+	<div class="sortBox">
+    <label>
+		<input type="checkbox" id="sortLatest" onchange="applyFilters()">
+		Latest → Oldest
+	</label>
+
+	<label>
+		<input type="checkbox" id="sortCheap" onchange="applyFilters()">
+		Cheapest → Expensive
+	</label>
+
+</div>
+
+
+	<input type="range" id="priceRange" min="2" max="100" value="100"
+       oninput="updatePriceLabel(this.value)">
+	<span id="priceValue">RM100</span>
+</div>
+
+<!-- Products Container -->
+<div id="productsContainer"></div>
+<div id="productsContainer" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
+
+
+
+
+
