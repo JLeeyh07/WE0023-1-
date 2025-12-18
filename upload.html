@@ -61,14 +61,13 @@
 </form>
 </div>
 
-<!-- Firebase CDN -->
+<!-- Firebase v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 
 <script>
-  // Initialize Firebase
-  const firebaseConfig = {
+  var firebaseConfig = {
     apiKey: "AIzaSyBTSEX-KMCddwLaKNCSEvEI0OQr58uayyg",
     authDomain: "we0023-59d22.firebaseapp.com",
     projectId: "we0023-59d22",
@@ -76,14 +75,12 @@
     messagingSenderId: "443902240610",
     appId: "1:443902240610:web:a649d92142e78c51b3ee3b"
   };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  const storage = firebase.storage();
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  var db = firebase.firestore();
+  var storage = firebase.storage();
 
   const uploadForm = document.getElementById("uploadForm");
-
-  uploadForm.addEventListener("submit", async function(e) {
+  uploadForm.addEventListener("submit", function(e){
     e.preventDefault();
 
     const productName = document.getElementById("productName").value.trim();
@@ -94,20 +91,13 @@
     const serviceCategory = document.getElementById("serviceCategory").value;
     const price = parseFloat(document.getElementById("price").value);
     const description = document.getElementById("description").value;
-    const imageInput = document.getElementById("image");
+    const imageFile = document.getElementById("image").files[0];
 
-    if (!imageInput.files[0]) {
-      alert("Please upload an image");
-      return;
-    }
+    if(!imageFile) { alert("Please upload an image"); return; }
 
-    const imageFile = imageInput.files[0];
     const storageRef = storage.ref('productImages/' + Date.now() + '_' + imageFile.name);
-    
-    // Upload image to Firebase Storage
-    storageRef.put(imageFile).then(() => {
-      storageRef.getDownloadURL().then((url) => {
-        // Save product to Firestore
+    storageRef.put(imageFile).then(snapshot => {
+      snapshot.ref.getDownloadURL().then(url => {
         db.collection("products").add({
           productName,
           sellerName,
@@ -119,23 +109,18 @@
           description,
           imageUrl: url,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(() => {
+        }).then(()=> {
           alert("Item uploaded successfully!");
           window.location.href = "index.html";
-        }).catch(err => {
-          console.error(err);
-          alert("Error uploading product.");
         });
       });
-    }).catch(err => {
-      console.error(err);
-      alert("Error uploading image.");
     });
   });
 </script>
 
 </body>
 </html>
+
 
 
 
