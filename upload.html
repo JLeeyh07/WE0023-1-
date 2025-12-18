@@ -61,14 +61,29 @@
 </form>
 </div>
 
-<script type="module">
-import { db, storage } from './firebase.js';
-import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
-import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js";
+<!-- Firebase CDN -->
+<script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js"></script>
 
-const uploadForm = document.getElementById("uploadForm");
+<script>
+  // Initialize Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyBTSEX-KMCddwLaKNCSEvEI0OQr58uayyg",
+    authDomain: "we0023-59d22.firebaseapp.com",
+    projectId: "we0023-59d22",
+    storageBucket: "we0023-59d22.firebasestorage.app",
+    messagingSenderId: "443902240610",
+    appId: "1:443902240610:web:a649d92142e78c51b3ee3b"
+  };
 
-uploadForm.addEventListener("submit", async (e) => {
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const storage = firebase.storage();
+
+  const uploadForm = document.getElementById("uploadForm");
+
+  uploadForm.addEventListener("submit", async function(e) {
     e.preventDefault();
 
     const productName = document.getElementById("productName").value.trim();
@@ -82,37 +97,46 @@ uploadForm.addEventListener("submit", async (e) => {
     const imageInput = document.getElementById("image");
 
     if (!imageInput.files[0]) {
-        alert("Please upload an image");
-        return;
+      alert("Please upload an image");
+      return;
     }
 
-    // Upload image to Firebase Storage
     const imageFile = imageInput.files[0];
-    const imageRef = ref(storage, `productImages/${Date.now()}_${imageFile.name}`);
-    await uploadBytes(imageRef, imageFile);
-    const imageUrl = await getDownloadURL(imageRef);
-
-    // Add product to Firestore
-    await addDoc(collection(db, "products"), {
-        productName,
-        sellerName,
-        blok,
-        phone,
-        productCategory,
-        serviceCategory,
-        price,
-        description,
-        imageUrl,
-        createdAt: serverTimestamp()
+    const storageRef = storage.ref('productImages/' + Date.now() + '_' + imageFile.name);
+    
+    // Upload image to Firebase Storage
+    storageRef.put(imageFile).then(() => {
+      storageRef.getDownloadURL().then((url) => {
+        // Save product to Firestore
+        db.collection("products").add({
+          productName,
+          sellerName,
+          blok,
+          phone,
+          productCategory,
+          serviceCategory,
+          price,
+          description,
+          imageUrl: url,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+          alert("Item uploaded successfully!");
+          window.location.href = "index.html";
+        }).catch(err => {
+          console.error(err);
+          alert("Error uploading product.");
+        });
+      });
+    }).catch(err => {
+      console.error(err);
+      alert("Error uploading image.");
     });
-
-    alert("Item uploaded successfully!");
-    window.location.href = "index.html";
-});
+  });
 </script>
 
 </body>
 </html>
+
 
 
 
