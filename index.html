@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CampusMart</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+</head>
+<body>
+
+<header>
+    <h1>CampusMart</h1>
+</header>
+
+<nav>
+    <button onclick="location.href='index.html'">Home</button>
+    <button onclick="location.href='upload.html'">Upload</button>
+    <button onclick="location.href='rules.html'">Rules</button>
+    <button onclick="location.href='feedback.html'">Feedback</button>
+</nav>
+
+<div class="container">
+
+    <!-- FILTERS -->
+    <div class="filters">
+        <select id="serviceFilter" onchange="applyFilters()">
+            <option value="All">All Services</option>
+            <option value="Selling">Selling</option>
+            <option value="Renting">Renting</option>
+        </select>
+
+        <select id="productFilter" onchange="applyFilters()">
+            <option value="All">All Categories</option>
+            <option value="Clothes">Clothes</option>
+            <option value="Books">Books</option>
+            <option value="Cosmetics">Cosmetics</option>
+            <option value="Skin Care">Skin Care</option>
+            <option value="Accessories">Accessories</option>
+            <option value="Others">Others</option>
+        </select>
+
+        <label>
+            Upload Date:
+            <select id="uploadDateFilter" onchange="applyFilters()">
+                <option value="Latest">Latest</option>
+                <option value="Oldest">Oldest</option>
+            </select>
+        </label>
+
+        <label>
+			Price (RM): 
+			<input type="range" id="priceFilter" min="1" max="100" value="100" oninput="updatePriceValue(); applyFilters()">
+			<input type="number" id="priceInput" min="1" max="100" value="100" oninput="syncPriceSlider(); applyFilters()">
+			<span id="priceValue">RM100</span>
+		</label>
+
+
+        <button onclick="clearFilters()">Clear Filters</button>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div id="productsContainer"></div>
+
+</div>
+
+</body>
+</html>
+
+
+
+
+
+

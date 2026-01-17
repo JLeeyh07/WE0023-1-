@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Upload Item - CampusMart</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+</head>
+<body>
+
+<header>
+    <h1>CampusMart</h1>
+</header>
+
+<nav>
+    <button onclick="location.href='index.html'">Home</button>
+    <button onclick="location.href='upload.html'">Upload</button>
+    <button onclick="location.href='rules.html'">Rules</button>
+    <button onclick="location.href='feedback.html'">Feedback</button>
+</nav>
+
+
+<div class="container">
+
+<form id="uploadForm">
+
+    <input type="text" id="productName" placeholder="Product Name" required>
+    <input type="text" id="sellerName" placeholder="Seller Name" required>
+    <input type="text" id="blok" placeholder="Blok" required>
+    <input type="text" id="phone" placeholder="Phone Number" required>
+
+    <select id="productCategory" required>
+        <option value="Clothes">Clothes</option>
+        <option value="Books">Books</option>
+        <option value="Cosmetics">Cosmetics</option>
+        <option value="Skin Care">Skin Care</option>
+        <option value="Accessories">Accessories</option>
+        <option value="Others">Others</option>
+    </select>
+
+    <select id="serviceCategory" required>
+        <option value="Selling">Selling</option>
+        <option value="Renting">Renting</option>
+    </select>
+
+    <input type="number" id="price" placeholder="Price (RM)" min="1" max="100" required>
+
+    <textarea id="description" placeholder="Description"></textarea>
+
+    <!-- THUMBNAIL IMAGE (REQUIRED) -->
+    <label>Thumbnail Image (Required)</label>
+    <input type="file" id="thumbnailInput" accept="image/*" onchange="previewThumbnail()" required>
+    <img id="thumbnailPreview" style="display:none; max-width:200px; margin:5px;">
+
+    <!-- ATTACHMENT IMAGES (OPTIONAL) -->
+    <label>Attachment Image 1 (Optional)</label>
+    <input type="file" id="attachmentInput1" accept="image/*" onchange="previewAttachment(1)">
+    <img id="attachmentPreview1" style="display:none; max-width:200px; margin:5px;">
+
+    <label>Attachment Image 2 (Optional)</label>
+    <input type="file" id="attachmentInput2" accept="image/*" onchange="previewAttachment(2)">
+    <img id="attachmentPreview2" style="display:none; max-width:200px; margin:5px;">
+
+    <button type="submit">Upload Item</button>
+
+</form>
+
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);justify-content:center;align-items:center;cursor:pointer;z-index:999;">
+    <img id="lightboxImg" style="max-width:90%;max-height:90%;border-radius:10px;">
+</div>
+
+<script>
+// Thumbnail preview
+function previewThumbnail() {
+    const input = document.getElementById("thumbnailInput");
+    const preview = document.getElementById("thumbnailPreview");
+    if (input.files && input.files[0]) {
+        preview.src = URL.createObjectURL(input.files[0]);
+        preview.style.display = "block";
+    } else {
+        preview.style.display = "none";
+    }
+}
+
+// Attachment preview
+function previewAttachment(num) {
+    const input = document.getElementById(`attachmentInput${num}`);
+    const preview = document.getElementById(`attachmentPreview${num}`);
+    if (input.files && input.files[0]) {
+        preview.src = URL.createObjectURL(input.files[0]);
+        preview.style.display = "block";
+    } else {
+        preview.style.display = "none";
+    }
+}
+
+// Close lightbox on click
+document.getElementById("lightbox").addEventListener("click", function() {
+    this.style.display = "none";
+});
+</script>
+
+</body>
+</html>
